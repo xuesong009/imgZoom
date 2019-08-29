@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>仿淘宝放大镜</title>
+  <!--reset css-->
+  <link rel="stylesheet" href="./libs/reset.css"/>
+  <style type="text/css">
+    div.out {
+      width: 200px;
+      height: 200px;
+      margin: 100px;
+      /*overflow: hidden;*/
+      position: relative;
+      border:1px solid #cccccc;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .out > .imgwrap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .imgwrap > img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .mover {
+      display: none;
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      z-index: 999;
+      cursor: move;
+      background: url("./images/blueDot.png") repeat;
+    }
+
+    /*大图*/
+    .out > .bigImgWrap {
+      /*默认不显示*/
+      display: none;
+      width: 350px;
+      height: 350px;
+      border: 1px solid #cccccc;
+      /*定位*/
+      position: absolute;
+      left: 210px;
+      top: 0px;
+      /*溢出清除*/
+      overflow: hidden;
+    }
+
+    .bigImgWrap > img {
+      display: block;
+      /*放大5倍*/
+      width: 1000px;
+      height: 1000px;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    /*img list*/
+    .img-list {
+      width: 320px;
+      height: 50px;
+    }
+
+    .img-list > ul {
+      list-style: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .img-list > ul:after {
+      content: "";
+      display: block;
+      width: 0;
+      height: 0;
+      clear: both;
+    }
+
+    .img-list > ul > .imgItem {
+      float: left;
+      width: 50px;
+      height: 50px;
+      margin-right: 15px;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .img-list > ul > .imgItem:last-child {
+      margin-right: 0;
+    }
+
+    .img-list > ul > .imgItem > img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .img-list > ul > .imgItem:hover {
+      border: 2px solid rgb(255, 0, 0);
+    }
+  </style>
+</head>
+<body>
+<div class="out">
+  <div class="imgwrap">
+    <img src="./images/car01.jpg" alt="car"/>
+    <div class="mover"></div>
+  </div>
+
+  <div class="bigImgWrap">
+    <img src="./images/car01.jpg" alt="car"/>
+  </div>
+</div>
+
+<div class="img-list">
+  <ul>
+    <li class="imgItem"><img src="./images/car-sm01.jpg" data-src-nth='1' alt=""/></li>
+    <li class="imgItem"><img src="./images/car-sm02.jpg" data-src-nth='2' alt=""/></li>
+    <li class="imgItem"><img src="./images/car-sm03.jpg" data-src-nth='3' alt=""/></li>
+    <li class="imgItem"><img src="./images/car-sm04.jpg" data-src-nth='4' alt=""/></li>
+    <li class="imgItem"><img src="./images/car-sm05.jpg" data-src-nth='5' alt=""/></li>
+  </ul>
+</div>
+
+<script type="text/javascript">
+  window.onload = function () {
+    //out
+    var out = document.getElementsByClassName('out').item(0);
+    //imgwrap
+    var imgwrap = document.querySelector('.imgwrap');
+    //mover
+    var mover = document.querySelector('.mover');
+    //img
+    var img = imgwrap.children[0];
+    //index of img
+    var imgNth = 1;
+
+    //bigImgWrap
+    var bigImgWrap = document.getElementsByClassName('bigImgWrap')[0];
+    bigImg = bigImgWrap.children[0];
+
+    var imgObj = {};
+    Object.defineProperty(imgObj, 'nth', {
+      set: function (val) {
+        bigImg.src = img.src = './images/car0' + val + '.jpg'
+      }
+    });
+    var x, y;
+    //big img position
+    var bigPointX, bigPointY;
+
+    imgwrap.onmouseover = function (event) {
+      //mover
+      mover.style.display = 'block';
+      //bigImgWrap
+      bigImgWrap.style.display = 'block';
+      imgwrap.onmousemove = function (event) {
+        event = event || window.event;
+        //鼠标定位到mover中间
+        x = event.pageX - out.offsetLeft - mover.clientWidth / 2;
+        y = event.pageY - out.offsetTop - mover.clientHeight / 2;
+        // console.log(event.pageX, event.pageY);
+
+        if (x < 0) {//最左边 最小值0
+          x = 0;
+        } else if (x >= out.clientWidth - mover.clientWidth) {
+          //最右边 最大值
+          x = out.clientWidth - mover.clientWidth;
+        }
+        if (y < 0) {//最上边 最小值0
+          y = 0;
+        } else if (y >= out.clientHeight - mover.clientHeight) {
+          //最下边 最大值
+          y = out.clientHeight - mover.clientHeight;
+        }
+        mover.style.left = x + 'px';
+        mover.style.top = y + 'px';
+
+        /*bigPointX, bigPointY*/
+
+        /*mover偏移量最大后,继续向下向右移动鼠标时 --> 修正x,y*/
+        if (event.pageX - out.offsetLeft - mover.clientWidth / 2 > x) {
+          x = event.pageX - out.offsetLeft - mover.clientWidth / 2;
+        }
+        if (event.pageY - out.offsetTop - mover.clientHeight / 2 > y) {
+          y = event.pageY - out.offsetTop - mover.clientHeight / 2;
+        }
+        bigPointX = x * bigImg.clientWidth / img.clientWidth;
+        bigPointY = y * bigImg.clientHeight / img.clientHeight;
+        bigImg.style.left = -bigPointX + 'px';
+        bigImg.style.top = -bigPointY + 'px';
+      }
+    };
+    imgwrap.onmouseout = function (event) {
+      mover.style.display = 'none';
+      bigImgWrap.style.display = 'none';
+    };
+
+    /*图片切换 imgNth*/
+    var imgListBox = document.querySelector('.img-list>ul');
+    imgListBox.addEventListener('click', function (event) {
+      event = event || window.event;
+      if (event.target.tagName.toLowerCase() === 'img') {
+        imgNth = event.target.getAttribute('data-src-nth');
+        imgObj.nth = imgNth;
+        console.log(imgNth);
+      }
+    }, false);
+  };
+</script>
+</body>
+</html>
